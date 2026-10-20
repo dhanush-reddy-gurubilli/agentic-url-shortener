@@ -1,0 +1,85 @@
+# The SDLC as an explicit dependency graph. Stages run as soon as everything they depend on is satisfied
+# (SUCCEEDED or SKIPPED), so independent stages run in parallel and a stage that depends on several others is a join.
+#
+# autonomy: AUTONOMOUS | APPROVE_ON_HIGH_IMPACT (human only if the classifier flags the output) | ALWAYS_APPROVE
+# exit-gates: schema, ambiguity, design-scope, patch-policy, doc-sections, build (see gate/ package)
+# Every stage also has the implicit entry gates: upstream artifacts exist, token budget remains.
+name: sdlc
+
+stages:
+  - key: requirements
+    agent: REQUIREMENTS
+    exit-gates: [schema, ambiguity]
+    retry: { max-attempts: 3, backoff-millis: 200 }
+
+  # Brownfield only: skipped (and counted as satisfied) when the requirement is a greenfield change.
+  - key: impact_analysis
+    agent: IMPACT_ANALYSIS
+    depends-on: [requirements]
+    only-for-change-type: BROWNFIELD
+    exit-gates: [schema]
+    fallback-agent: IMPACT_STATIC
+    retry: { max-attempts: 2, backoff-millis: 200 }
+
+  - key: design
+    agent: ARCHITECT
+    depends-on: [requirements, impact_analysis]
+    exit-gates: [schema]
+    autonomy: APPROVE_ON_HIGH_IMPACT
+    retry: { max-attempts: 3, backoff-millis: 200 }
+
+  # Its task graph is expanded into one implementation stage per task (see dynamic-stages).
+  - key: planning
+    agent: PLANNER
+    depends-on: [design]
+    exit-gates: [schema, design-scope]
+    retry: { max-attempts: 3, backoff-millis: 200 }
+
+  # Runs in parallel with the implementation stages and the documentation.
+  - key: test_generation
+    agent: TESTER
+    depends-on: [planning]
+    exit-gates: [schema, design-scope, patch-policy]
+    autonomy: APPROVE_ON_HIGH_IMPACT
+    retry: { max-attempts: 3, backoff-millis: 200 }
+
+  - key: documentation
+    agent: DOC_WRITER
+    depends-on: [planning]
+    exit-gates: [schema, patch-policy, doc-sections]
+    fallback-agent: DOC_TEMPLATE
+    retry: { max-attempts: 2, backoff-millis: 200 }
+
+  # Join: waits for the tests, the docs and every implementation stage (via joined-by below).
+  # On failure it re-opens the code stages with the build output as feedback (bounded by max-attempts).
+  - key: validation
+    agent: VALIDATOR
+    depends-on: [test_generation, documentation]
+    exit-gates: [build]
+    failure-action: REOPEN_CODE_STAGES
+    retry: { max-attempts: 3, backoff-millis: 0 }
+
+  - key: release_readiness
+    agent: RELEASE_READINESS
+    depends-on: [validation]
+    exit-gates: [schema]
+    fallback-agent: RELEASE_READINESS_STATIC
+    retry: { max-attempts: 2, backoff-millis: 200 }
+
+  # Commits the engineering summary to the run's branch. Never merges or pushes.
+  - key: release
+    agent: RELEASER
+    depends-on: [release_readiness]
+    exit-gates: [schema, patch-policy]
+    autonomy: ALWAYS_APPROVE
+    retry: { max-attempts: 1, backoff-millis: 0 }
+
+dynamic-stages:
+  - name: implementation
+    key-prefix: "impl:"
+    agent: CODER
+    expand-from: planning
+    joined-by: [validation]
+    exit-gates: [schema, design-scope, patch-policy]
+    autonomy: APPROVE_ON_HIGH_IMPACT
+    retry: { max-attempts: 3, backoff-millis: 200 }

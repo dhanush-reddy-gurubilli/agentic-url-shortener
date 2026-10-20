@@ -1,0 +1,46 @@
+{
+    "tasks":  [
+                  {
+                      "id":  "T1",
+                      "title":  "Add the ZXing core dependency",
+                      "files":  [
+                                    "pom.xml"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "The build resolves com.google.zxing:core"
+                                     ]
+                  },
+                  {
+                      "id":  "T2",
+                      "title":  "Implement QrCodeService",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/service/QrCodeService.java"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "PNG decodes to the content at the requested size",
+                                         "SVG is well-formed",
+                                         "Output is deterministic"
+                                     ]
+                  },
+                  {
+                      "id":  "T3",
+                      "title":  "Expose GET /api/v1/urls/{code}/qr",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/web/QrController.java"
+                                ],
+                      "dependsOn":  [
+                                        "T2"
+                                    ],
+                      "acceptance":  [
+                                         "400 for bad size or format",
+                                         "404 unknown code, 410 deleted or expired"
+                                     ]
+                  }
+              ]
+}

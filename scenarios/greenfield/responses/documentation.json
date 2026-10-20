@@ -1,0 +1,15 @@
+{
+    "summary":  "Document the QR endpoint",
+    "changes":  [
+                    {
+                        "path":  "docs/qr-codes.md",
+                        "op":  "WRITE",
+                        "content":  "# QR codes\n\n## Endpoint\n\n`GET /api/v1/urls/{code}/qr` returns a QR code that encodes the short URL (`\u003cbase-url\u003e/\u003ccode\u003e`).\n\n| Parameter | Default | Notes |\n| --- | --- | --- |\n| `format` | `png` | `png` or `svg` (case-insensitive) |\n| `size` | `256` | Edge length in pixels, 64 to 1024 |\n\n## Errors\n\n- `400` for a size outside the range or an unknown format\n- `404` for an unknown code, `410` for a deleted or expired one (same as the redirect)"
+                    },
+                    {
+                        "path":  "docs/CHANGELOG.md",
+                        "op":  "WRITE",
+                        "content":  "# Changelog\n\n## QR code endpoint\n\n- Added `GET /api/v1/urls/{code}/qr` (PNG and SVG), generated in-process with ZXing core."
+                    }
+                ]
+}

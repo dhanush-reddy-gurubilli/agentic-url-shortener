@@ -1,0 +1,17 @@
+{
+    "summary":  "Apply the create rate limit to the bulk path",
+    "changes":  [
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/CreateRateLimitFilter.java",
+                        "op":  "REPLACE",
+                        "find":  "/** Rate-limits URL creation per client IP; everything else (notably redirects) is untouched. */",
+                        "replacement":  "/** Rate-limits URL creation (single and bulk) per client IP; everything else (notably redirects) is untouched. */"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/CreateRateLimitFilter.java",
+                        "op":  "REPLACE",
+                        "find":  "        return !(\"POST\".equals(request.getMethod()) \u0026\u0026 \"/api/v1/urls\".equals(request.getRequestURI()));",
+                        "replacement":  "        String uri = request.getRequestURI();\n        boolean createsLinks = \"/api/v1/urls\".equals(uri) || \"/api/v1/urls/bulk\".equals(uri);\n        return !(\"POST\".equals(request.getMethod()) \u0026\u0026 createsLinks);"
+                    }
+                ]
+}

@@ -1,0 +1,35 @@
+{
+    "summary":  "Add three static checks to UrlValidator.validateTargetUrl; nothing else changes.",
+    "decisions":  [
+                      {
+                          "title":  "Static checks only",
+                          "rationale":  "No network calls and no external services, as assumed during clarification."
+                      },
+                      {
+                          "title":  "Reject only clear-cut cases",
+                          "rationale":  "Credentials in the URL, IP-literal hosts and local-only hosts have no legitimate use for a public shortener. Anything fuzzier would risk false rejections."
+                      },
+                      {
+                          "title":  "Leave the rate limiter alone",
+                          "rationale":  "Out of scope after review; it is shared by every create request."
+                      }
+                  ],
+    "intendedFiles":  [
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/service/UrlValidator.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Reject credentials, IP literals and local hosts"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/service/UrlValidatorAbuseTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Tests for the new URL checks"
+                          }
+                      ],
+    "newDependencies":  [
+
+                        ],
+    "risks":  [
+                  "A false rejection blocks a legitimate link; only unambiguous cases are rejected"
+              ]
+}

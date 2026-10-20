@@ -1,0 +1,41 @@
+{
+    "summary":  "Harden creation: stricter URL validation plus a sliding-window rate limiter backed by a third-party library.",
+    "decisions":  [
+                      {
+                          "title":  "Sliding window limiter",
+                          "rationale":  "The fixed window allows a burst of twice the limit across a window boundary."
+                      },
+                      {
+                          "title":  "Use Guava RateLimiter",
+                          "rationale":  "Avoids writing a limiter by hand."
+                      }
+                  ],
+    "intendedFiles":  [
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/service/UrlValidator.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Reject credentials, IP literals and local hosts"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/service/CreateRateLimiter.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Replace the fixed window with a sliding window"
+                          },
+                          {
+                              "path":  "pom.xml",
+                              "action":  "MODIFY",
+                              "purpose":  "Add Guava"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/service/UrlValidatorAbuseTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Tests for the new URL checks"
+                          }
+                      ],
+    "newDependencies":  [
+                            "com.google.guava:guava"
+                        ],
+    "risks":  [
+                  "Touches the rate limiter, which is shared by every create request"
+              ]
+}

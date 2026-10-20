@@ -1,0 +1,10 @@
+{
+    "summary":  "Add an index on urls.expires_at",
+    "changes":  [
+                    {
+                        "path":  "src/main/resources/db/migration/V1__shortener.sql",
+                        "op":  "WRITE",
+                        "content":  "CREATE TABLE urls (\n    id              BIGSERIAL PRIMARY KEY,\n    short_code      VARCHAR(32)  NOT NULL UNIQUE,\n    original_url    TEXT         NOT NULL,\n    created_at      TIMESTAMPTZ  NOT NULL,\n    expires_at      TIMESTAMPTZ,\n    deleted_at      TIMESTAMPTZ,\n    idempotency_key VARCHAR(64)  UNIQUE\n);\n\nCREATE TABLE click_events (\n    id            BIGSERIAL PRIMARY KEY,\n    url_id        BIGINT       NOT NULL REFERENCES urls (id),\n    occurred_at   TIMESTAMPTZ  NOT NULL,\n    referrer_host VARCHAR(255),\n    user_agent    VARCHAR(255),\n    -- Compliance: client IPs are stored only as salted SHA-256 hashes, never raw\n    ip_hash       VARCHAR(64)\n);\n\nCREATE INDEX idx_click_events_url_time ON click_events (url_id, occurred_at);\n\nCREATE INDEX idx_urls_expires_at ON urls (expires_at) WHERE expires_at IS NOT NULL;\n"
+                    }
+                ]
+}

@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: agentic-url-shortener
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/agentic}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+shortener:
+  base-url: ${SHORTENER_BASE_URL:http://localhost:8080}
+  code-length: 7
+  cache-ttl: 10m
+  cache-max-size: 100000
+  create-rate-limit-per-minute: 60
+  click-executor-queue-capacity: 10000
+  ip-hash-salt: ${SHORTENER_IP_SALT:change-me}
+  reserved-aliases: [api, actuator, swagger-ui, v3, health, admin]
+
+orchestrator:
+  # Directory where each run gets its own git workspace copy of this repository's source
+  workspace-root: ${ORCHESTRATOR_WORKSPACE_ROOT:./workspaces}
+  # Source tree the workspace is copied from (this repository)
+  source-root: ${ORCHESTRATOR_SOURCE_ROOT:.}
+  workflow: classpath:workflows/sdlc.yaml
+  policy: classpath:policies/default-policy.yaml
+  llm:
+    # replay = scripted/recorded responses from scenarios/<name>/responses; live = Anthropic API; record = live + save responses
+    mode: ${ORCHESTRATOR_LLM_MODE:replay}
+    model: ${ORCHESTRATOR_LLM_MODEL:claude-opus-5-5}
+    max-tokens: 16000
+    timeout: 120s
+    replay-root: ${ORCHESTRATOR_REPLAY_ROOT:./scenarios}
+  parallelism: 4
+  ambiguity-threshold: 0.5
+  max-policy-violations: 5
+  default-token-budget: 200000
+  build:
+    command: ${ORCHESTRATOR_BUILD_COMMAND:mvn}
+    timeout: 15m
+    min-line-coverage: 0.80
+  approval-api-key: ${ORCHESTRATOR_APPROVAL_API_KEY:local-dev-key}

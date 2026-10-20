@@ -1,0 +1,39 @@
+name: greenfield
+type: GREENFIELD
+description: >
+  A new capability from scratch: QR codes for short URLs. Shows the full DAG with parallel implementation tasks, a new
+  third-party dependency (human approval), an injected model timeout that ends in the template fallback, and a scripted
+  human who approves each high-impact checkpoint.
+requirement: >
+  Add a QR-code endpoint for short URLs: GET /api/v1/urls/{code}/qr returns a PNG (default) or SVG QR code that encodes
+  the short URL, with an optional size in pixels.
+token-budget: 600000
+
+faults:
+  # The documentation agent's model calls time out on both attempts, so the stage falls back to the template writer.
+  - stage: documentation
+    type: TIMEOUT
+    attempts: [1, 2]
+
+# The "human" of the demo auto-pilot. Real runs use the approval endpoints; every scripted decision is audited with
+# the actor name autopilot:scripted-human.
+human-actions:
+  - on: APPROVAL
+    stage: design
+    decision: APPROVE
+    comment: "A QR library is justified; ZXing core is small, widely used and has no transitive dependencies."
+    times: 2
+  - on: APPROVAL
+    stage: "impl:T1"
+    decision: APPROVE
+    comment: "Only the ZXing core dependency is added. Version is pinned."
+    times: 3
+  - on: APPROVAL
+    stage: "impl:T3"
+    decision: APPROVE
+    comment: "New read-only endpoint; it reuses the redirect's 404/410 handling."
+    times: 3
+  - on: APPROVAL
+    stage: release
+    decision: APPROVE
+    comment: "Build green, coverage above the bar, summary reviewed."

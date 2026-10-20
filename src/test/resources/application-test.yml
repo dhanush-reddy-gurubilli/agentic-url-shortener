@@ -1,0 +1,13 @@
+# Tests run against a separate database so they never touch development data.
+spring:
+  datasource:
+    # DB_URL is set when the orchestrator builds a workspace: that build gets its own throw-away schema.
+    url: ${TEST_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/agentic_test}}
+
+shortener:
+  base-url: http://localhost:8080
+  create-rate-limit-per-minute: 1000
+
+orchestrator:
+  recover-on-startup: false
+  workspace-root: ${java.io.tmpdir}/agentic-test-workspaces

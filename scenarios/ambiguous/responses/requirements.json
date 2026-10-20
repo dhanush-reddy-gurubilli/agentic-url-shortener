@@ -1,0 +1,32 @@
+{
+    "title":  "Reject unsafe target URLs at creation",
+    "changeType":  "BROWNFIELD",
+    "goals":  [
+                  "Stop the shortener being used to disguise credentials-bearing, numeric-host or local-network links"
+              ],
+    "functionalRequirements":  [
+                                   "Reject URLs that embed credentials (user:password@host)",
+                                   "Reject URLs whose host is an IP address (v4 or v6 literal) instead of a domain name",
+                                   "Reject hosts that can only be local (localhost, *.localhost, *.local, *.internal)"
+                               ],
+    "nonFunctionalRequirements":  [
+                                      "Checks are static and cheap: no network calls",
+                                      "Existing valid URLs keep working",
+                                      "The existing per-IP create rate limit is not changed"
+                                  ],
+    "acceptanceCriteria":  [
+                               "A URL with embedded credentials is rejected with 400",
+                               "A URL with an IPv4 or IPv6 literal host is rejected with 400",
+                               "localhost-style and .local / .internal hosts are rejected with 400",
+                               "Ordinary https URLs on domain names are still accepted"
+                           ],
+    "ambiguities":  [
+
+                    ],
+    "assumptions":  [
+                        "Phishing and unsafe targets only; the existing per-IP create rate limit stays as it is.",
+                        "Rejected at creation time; no background scanning.",
+                        "No external services: only static checks on the URL itself."
+                    ],
+    "ambiguityScore":  0.15
+}

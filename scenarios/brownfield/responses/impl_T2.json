@@ -1,0 +1,47 @@
+{
+    "summary":  "Bulk DTOs and POST /api/v1/urls/bulk",
+    "changes":  [
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/ShortenerDtos.java",
+                        "op":  "REPLACE",
+                        "find":  "import jakarta.validation.constraints.NotBlank;",
+                        "replacement":  "import jakarta.validation.Valid;\nimport jakarta.validation.constraints.NotBlank;\nimport jakarta.validation.constraints.NotEmpty;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/ShortenerDtos.java",
+                        "op":  "REPLACE",
+                        "find":  "import java.time.Instant;",
+                        "replacement":  "import java.time.Instant;\nimport java.util.List;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/ShortenerDtos.java",
+                        "op":  "REPLACE",
+                        "find":  "    public record UrlResponse(String code, String shortUrl, String originalUrl, Instant createdAt,",
+                        "replacement":  "    /** Up to 100 URLs; each is validated and created independently. */\n    public record BulkCreateRequest(@NotEmpty @Size(max = 100) @Valid List\u003cCreateUrlRequest\u003e urls) {\n    }\n\n    public record BulkItem(int index, String status, String code, String shortUrl, String error) {\n    }\n\n    public record BulkCreateResponse(int created, int rejected, List\u003cBulkItem\u003e items) {\n    }\n\n    public record UrlResponse(String code, String shortUrl, String originalUrl, Instant createdAt,"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/UrlController.java",
+                        "op":  "REPLACE",
+                        "find":  "import com.agentic.shortener.web.ShortenerDtos.CreateUrlRequest;",
+                        "replacement":  "import com.agentic.shortener.web.ShortenerDtos.BulkCreateRequest;\nimport com.agentic.shortener.web.ShortenerDtos.BulkCreateResponse;\nimport com.agentic.shortener.web.ShortenerDtos.BulkItem;\nimport com.agentic.shortener.web.ShortenerDtos.CreateUrlRequest;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/UrlController.java",
+                        "op":  "REPLACE",
+                        "find":  "import com.agentic.shortener.service.ShortenerService.CreateCommand;",
+                        "replacement":  "import com.agentic.shortener.service.ShortenerService.BatchItemResult;\nimport com.agentic.shortener.service.ShortenerService.CreateCommand;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/UrlController.java",
+                        "op":  "REPLACE",
+                        "find":  "import java.time.Instant;",
+                        "replacement":  "import java.time.Instant;\nimport java.util.List;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/web/UrlController.java",
+                        "op":  "REPLACE",
+                        "find":  "    @GetMapping(\"/{code}\")",
+                        "replacement":  "    @PostMapping(\"/bulk\")\n    @Operation(summary = \"Create up to 100 short URLs in one request; each item succeeds or is rejected on its own\")\n    public BulkCreateResponse createBulk(@Valid @RequestBody BulkCreateRequest request) {\n        List\u003cCreateCommand\u003e commands = request.urls().stream()\n                .map(u -\u003e new CreateCommand(u.url(), u.customAlias(), u.expiresAt(), null)).toList();\n        List\u003cBatchItemResult\u003e results = service.createBatch(commands);\n        List\u003cBulkItem\u003e items = results.stream()\n                .map(r -\u003e r.link() != null\n                        ? new BulkItem(r.index(), \"CREATED\", r.link().getShortCode(), baseUrl + \"/\" + r.link().getShortCode(), null)\n                        : new BulkItem(r.index(), \"REJECTED\", null, null, r.error()))\n                .toList();\n        int created = (int) items.stream().filter(i -\u003e i.status().equals(\"CREATED\")).count();\n        return new BulkCreateResponse(created, items.size() - created, items);\n    }\n\n    @GetMapping(\"/{code}\")"
+                    }
+                ]
+}
