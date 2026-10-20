@@ -1,0 +1,15 @@
+{
+    "summary":  "Document bulk create and the expiry fix",
+    "changes":  [
+                    {
+                        "path":  "docs/bulk-create.md",
+                        "op":  "WRITE",
+                        "content":  "# Bulk create\n\n## Endpoint\n\n`POST /api/v1/urls/bulk` with `{\"urls\": [{\"url\": \"...\", \"customAlias\": \"...\", \"expiresAt\": \"...\"}]}` creates 1 to 100 links.\n\n## Response\n\nAlways `200` with `{\"created\": n, \"rejected\": m, \"items\": [...]}`. Each item has an `index`, a `status` (`CREATED` or\n`REJECTED`) and either the `code` and `shortUrl`, or the `error`. Items are independent: a rejected item does not stop the others.\n\n## Limits\n\n- An empty list or more than 100 items returns `400`.\n- A bulk request counts as one create against the per-client rate limit, like `POST /api/v1/urls`."
+                    },
+                    {
+                        "path":  "docs/CHANGELOG.md",
+                        "op":  "WRITE",
+                        "content":  "# Changelog\n\n## Expiry enforced on every redirect; bulk create\n\n- Fixed: a link that expired while it was cached kept redirecting. Expiry is now checked on every redirect.\n- Added `POST /api/v1/urls/bulk` (up to 100 URLs, per-item results), covered by the create rate limit.\n- Added a partial index on `urls.expires_at` (migration V3)."
+                    }
+                ]
+}

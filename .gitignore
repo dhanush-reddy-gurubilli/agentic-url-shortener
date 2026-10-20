@@ -22,3 +22,16 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Build output and local runtime state
+target/
+workspaces/
+.idea/
+*.iml
+.vscode/
+
+# Working docs kept local, not published
+docs/PLAN.md
+docs/FINAL_SUMMARY.md
+docs/SCENARIOS.md
+docs/TESTING.md

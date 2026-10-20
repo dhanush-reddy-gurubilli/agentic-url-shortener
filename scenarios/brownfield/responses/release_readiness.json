@@ -1,0 +1,7 @@
+{
+    "narrative":  "## What changed\nExpiry is now enforced on every redirect, so a link that expires while cached stops redirecting immediately. A bulk-create endpoint accepts up to 100 URLs with per-item results, and the create rate limit covers it.\n\n## How it was validated\nThe whole shortener test suite ran against a throw-away database schema. The first version of the fix broke redirects for links without an expiry (a null check was missing); the existing tests caught it, the workspace was rebuilt without that change, and the stage was redone with the failure as feedback. A regression test now proves the fix, including the exact-expiry boundary.\n\n## Human decisions\nA person approved the design (schema, API and security-relevant files), the bulk endpoint, the new migration, the rate-limiter change and this release. An attempt to edit the applied V1 migration was blocked by policy.",
+    "risks":  [
+                  "A bulk request counts as one create for rate limiting, so a client may create up to 100 links per permitted request",
+                  "Batch creation is not atomic: items before a failure stay created"
+              ]
+}

@@ -1,0 +1,75 @@
+{
+    "summary":  "Re-check expiry on every resolve (evicting the entry), add ShortenerService.createBatch behind POST /api/v1/urls/bulk, extend the create rate limiter to the new path, and add a partial index on expires_at as a new migration.",
+    "decisions":  [
+                      {
+                          "title":  "Check expiry on every resolve",
+                          "rationale":  "CachedLink already holds expiresAt, so the check is one clock read. It is cheaper and simpler than shortening the cache TTL and cannot be defeated by it."
+                      },
+                      {
+                          "title":  "Per-item results for bulk",
+                          "rationale":  "Items are independent, so one bad URL should not fail 99 good ones. The response reports created and rejected counts and a status per item."
+                      },
+                      {
+                          "title":  "Bulk counts as one create for rate limiting",
+                          "rationale":  "Keeps the limiter a simple per-request counter. The per-item cost is not modelled, which is recorded as a risk."
+                      },
+                      {
+                          "title":  "New partial index on expires_at (V3)",
+                          "rationale":  "Supports expiry lookups and a future purge job. Partial because most links never expire. Added as a new migration; V1 is never edited."
+                      }
+                  ],
+    "intendedFiles":  [
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Enforce expiry on every resolve; add createBatch"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/web/ShortenerDtos.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Bulk request and response records"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/web/UrlController.java",
+                              "action":  "MODIFY",
+                              "purpose":  "POST /api/v1/urls/bulk"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/web/CreateRateLimitFilter.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Apply the create rate limit to the bulk path too"
+                          },
+                          {
+                              "path":  "src/main/resources/db/migration/V3__urls_expiry_index.sql",
+                              "action":  "CREATE",
+                              "purpose":  "Partial index on urls.expires_at"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/ExpiryDefectTest.java",
+                              "action":  "MODIFY",
+                              "purpose":  "Replace the test that asserted the defect with regression tests"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/service/ShortenerServiceBatchTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Batch creation rules"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/BulkApiTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Bulk endpoint over HTTP"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/BulkRateLimitTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Bulk requests are rate limited"
+                          }
+                      ],
+    "newDependencies":  [
+
+                        ],
+    "risks":  [
+                  "A bulk request counts as one create, so 100 links per permitted request; per-item cost is not modelled",
+                  "Batch creation is not atomic by design: a failure part way leaves earlier items created"
+              ]
+}

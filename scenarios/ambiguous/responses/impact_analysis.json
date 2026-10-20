@@ -1,0 +1,21 @@
+{
+    "summary":  "All target-URL checks live in UrlValidator.validateTargetUrl, called from ShortenerService.create. New static checks fit there; no other class needs to change.",
+    "affectedClasses":  [
+                            "UrlValidator",
+                            "ShortenerService"
+                        ],
+    "endpoints":  [
+                      "POST /api/v1/urls"
+                  ],
+    "tables":  [
+
+               ],
+    "dataFlows":  [
+                      "UrlController.create -\u003e ShortenerService.create -\u003e UrlValidator.validateTargetUrl"
+                  ],
+    "risks":  [
+                  "UrlValidator is security-relevant: a false rejection blocks legitimate users, so only clear-cut cases are rejected",
+                  "IPv6 literals appear as bracketed hosts from java.net.URI"
+              ],
+    "suspectedRootCause":  null
+}

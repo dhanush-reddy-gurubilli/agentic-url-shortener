@@ -1,0 +1,23 @@
+{
+    "summary":  "Reject credentials, IP-literal hosts and local-only hosts",
+    "changes":  [
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/UrlValidator.java",
+                        "op":  "REPLACE",
+                        "find":  "        return trimmed;",
+                        "replacement":  "        if (uri.getUserInfo() != null) {\n            throw new InvalidRequest(\"url must not contain credentials\");\n        }\n        String host = uri.getHost().toLowerCase(Locale.ROOT);\n        if (isIpLiteral(host)) {\n            throw new InvalidRequest(\"url must use a domain name, not an IP address\");\n        }\n        if (isLocalOnly(host)) {\n            throw new InvalidRequest(\"url must not point at a local-only host\");\n        }\n        return trimmed;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/UrlValidator.java",
+                        "op":  "REPLACE",
+                        "find":  "    public void validateAlias(String alias) {",
+                        "replacement":  "    private static boolean isIpLiteral(String host) {\n        // java.net.URI keeps the brackets of an IPv6 literal in the host, e.g. \"[::1]\".\n        return host.startsWith(\"[\") || IPV4.matcher(host).matches();\n    }\n\n    private static boolean isLocalOnly(String host) {\n        return host.equals(\"localhost\") || host.endsWith(\".localhost\") || host.endsWith(\".local\") || host.endsWith(\".internal\");\n    }\n\n    public void validateAlias(String alias) {"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/UrlValidator.java",
+                        "op":  "REPLACE",
+                        "find":  "    private static final Pattern ALIAS = Pattern.compile(\"^[A-Za-z0-9_-]{3,32}$\");",
+                        "replacement":  "    private static final Pattern ALIAS = Pattern.compile(\"^[A-Za-z0-9_-]{3,32}$\");\n    private static final Pattern IPV4 = Pattern.compile(\"^\\\\d{1,3}(\\\\.\\\\d{1,3}){3}$\");"
+                    }
+                ]
+}

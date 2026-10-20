@@ -1,0 +1,15 @@
+{
+    "summary":  "Document the URL checks",
+    "changes":  [
+                    {
+                        "path":  "docs/url-validation.md",
+                        "op":  "WRITE",
+                        "content":  "# URL validation\n\n## Rejected targets\n\n`POST /api/v1/urls` returns `400` for a target URL that:\n\n- is not `http` or `https`, is longer than 2048 characters, or points at this service (existing rules);\n- embeds credentials (`https://user:password@host`);\n- uses an IP address (IPv4 or IPv6 literal) instead of a domain name;\n- uses a local-only host: `localhost`, `*.localhost`, `*.local` or `*.internal`.\n\n## Notes\n\nThe checks are static: there are no network calls and no external reputation services."
+                    },
+                    {
+                        "path":  "docs/CHANGELOG.md",
+                        "op":  "WRITE",
+                        "content":  "# Changelog\n\n## Reject unsafe target URLs\n\n- `POST /api/v1/urls` now rejects URLs with embedded credentials, IP-literal hosts and local-only hosts."
+                    }
+                ]
+}

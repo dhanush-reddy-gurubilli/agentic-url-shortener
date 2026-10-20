@@ -1,0 +1,7 @@
+{
+    "narrative":  "## What was built\nA read-only endpoint, `GET /api/v1/urls/{code}/qr`, that renders the short URL as a PNG or SVG QR code, generated in-process with ZXing core.\n\n## How it was validated\nThe full shortener test suite ran against a throw-away database schema. New tests decode the generated PNG back to the short URL and check the SVG is well-formed, the size bounds, and the 404/410 behaviour.\n\n## Human decisions\nA person approved the design and the new dependency, the controller that adds the endpoint, and this release.",
+    "risks":  [
+                  "ZXing core is a new third-party dependency (pinned, allowlisted group)",
+                  "Responses are cached for five minutes by clients, so a deleted link can still show its QR code briefly in a browser cache"
+              ]
+}

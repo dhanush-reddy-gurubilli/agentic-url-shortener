@@ -1,0 +1,27 @@
+{
+    "summary":  "Expiry is only evaluated when a link is loaded into the Caffeine cache (ShortenerService.loadActiveLink). The cached CachedLink already carries expiresAt, but resolve() never consults it, so a link that expires while cached keeps redirecting until its cache entry expires.",
+    "affectedClasses":  [
+                            "ShortenerService",
+                            "RedirectController",
+                            "UrlController",
+                            "ShortenerDtos",
+                            "CreateRateLimitFilter"
+                        ],
+    "endpoints":  [
+                      "GET /{code}",
+                      "POST /api/v1/urls"
+                  ],
+    "tables":  [
+                   "urls"
+               ],
+    "dataFlows":  [
+                      "RedirectController.redirect -\u003e ShortenerService.resolve -\u003e redirectCache (Caffeine) -\u003e loadActiveLink -\u003e ShortUrlRepository",
+                      "POST /api/v1/urls -\u003e CreateRateLimitFilter -\u003e UrlController.create -\u003e ShortenerService.create"
+                  ],
+    "risks":  [
+                  "CreateRateLimitFilter only matches POST /api/v1/urls exactly, so a new bulk endpoint would bypass the per-client create limit",
+                  "The existing test ExpiryDefectTest asserts the buggy behaviour and must be replaced with one asserting the fix",
+                  "expires_at has no index; harmless today but relevant to expiry lookups"
+              ],
+    "suspectedRootCause":  "ShortenerService.resolve returns the cached CachedLink without re-checking CachedLink.expiresAt() against the clock."
+}

@@ -1,0 +1,39 @@
+name: brownfield
+type: BROWNFIELD
+description: >
+  A change to existing code: a reported bug (expired links still redirect) plus a small feature (bulk create).
+  Impact analysis locates the defect in the cache path. A migration edit is blocked by policy and redone as a new
+  migration; the first version of the fix has a bug that the existing test suite catches, which triggers the validation
+  loop (roll back, feed the failure back, redo); a schema change, an API change and a security-relevant file each need a
+  human approval.
+requirement: >
+  Users report that expired short links still redirect sometimes. Fix it, and add a bulk-create endpoint that accepts
+  up to 100 URLs in one request.
+token-budget: 800000
+
+faults: []
+
+human-actions:
+  - on: APPROVAL
+    stage: design
+    decision: APPROVE
+    comment: "Scope is right: fix in ShortenerService, bulk endpoint, a new (not edited) migration, and the rate limiter must cover the new endpoint."
+  - on: APPROVAL
+    stage: "impl:T2"
+    decision: APPROVE
+    comment: "Bulk endpoint returns per-item results; limit of 100 is enforced in the service and by validation."
+    times: 3
+  - on: APPROVAL
+    stage: "impl:T3"
+    decision: APPROVE
+    comment: "New migration V3 only; the applied V1 is untouched."
+    times: 3
+  - on: APPROVAL
+    stage: "impl:T4"
+    decision: APPROVE
+    comment: "The rate limiter now also covers POST /api/v1/urls/bulk. Counting a bulk request as one create is acceptable for now."
+    times: 3
+  - on: APPROVAL
+    stage: release
+    decision: APPROVE
+    comment: "Regression test proves the fix, the whole suite is green."
