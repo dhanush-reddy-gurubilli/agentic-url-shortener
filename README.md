@@ -8,8 +8,7 @@ dependency-graph orchestration engine, plus the URL shortener it works on. One S
   planning, parallel implementation, tests and docs, validation and release readiness. Agents propose; deterministic gates,
   policies and **humans** decide. The result is a git branch for review, never a merge.
 
-Read next: [Architecture](docs/ARCHITECTURE.md) · [Scenarios](docs/SCENARIOS.md) · [Testing, limits and trade-offs](docs/TESTING.md) ·
-[Final engineering summary](docs/FINAL_SUMMARY.md) · [Original plan](docs/PLAN.md)
+Read next: [Architecture](docs/ARCHITECTURE.md)
 
 ## Setup
 
@@ -52,7 +51,7 @@ Errors are RFC 9457 `application/problem+json`. Creation is rate limited per cli
 
 ## The orchestrator
 
-Three scripted scenarios show the system end to end (see [docs/SCENARIOS.md](docs/SCENARIOS.md)):
+Three scripted scenarios show the system end to end (each is a folder under `scenarios/`):
 
 | Scenario | Requirement | Shows |
 | --- | --- | --- |
@@ -121,4 +120,4 @@ mvn verify -Pscenarios         # also runs the three scenarios end to end, with 
 ```
 
 The test suite uses the database named by `TEST_DB_URL` (default `jdbc:postgresql://localhost:5432/agentic_test`) and the same
-`DB_USERNAME` / `DB_PASSWORD`. It truncates tables, so never point it at real data. See [docs/TESTING.md](docs/TESTING.md).
+`DB_USERNAME` / `DB_PASSWORD`. It truncates tables, so never point it at real data.

@@ -29,3 +29,9 @@ workspaces/
 .idea/
 *.iml
 .vscode/
+
+# Working docs kept local, not published
+docs/PLAN.md
+docs/FINAL_SUMMARY.md
+docs/SCENARIOS.md
+docs/TESTING.md
