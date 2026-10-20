@@ -1,0 +1,58 @@
+{
+    "tasks":  [
+                  {
+                      "id":  "T1",
+                      "title":  "Enforce expiry on every resolve and add createBatch",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/service/ShortenerService.java"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "A cached link returns 410 the moment it expires",
+                                         "Batch creation reports per-item results and enforces the limit of 100"
+                                     ]
+                  },
+                  {
+                      "id":  "T2",
+                      "title":  "Bulk DTOs and POST /api/v1/urls/bulk",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/web/ShortenerDtos.java",
+                                    "src/main/java/com/agentic/shortener/web/UrlController.java"
+                                ],
+                      "dependsOn":  [
+                                        "T1"
+                                    ],
+                      "acceptance":  [
+                                         "The endpoint returns created and rejected counts and a status per item"
+                                     ]
+                  },
+                  {
+                      "id":  "T3",
+                      "title":  "Partial index on expires_at (new migration)",
+                      "files":  [
+                                    "src/main/resources/db/migration/V3__urls_expiry_index.sql"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "V1 is untouched; V3 adds the index"
+                                     ]
+                  },
+                  {
+                      "id":  "T4",
+                      "title":  "Rate-limit the bulk path",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/web/CreateRateLimitFilter.java"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "POST /api/v1/urls/bulk is limited like POST /api/v1/urls"
+                                     ]
+                  }
+              ]
+}

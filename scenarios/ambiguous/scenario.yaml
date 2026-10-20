@@ -1,0 +1,42 @@
+name: ambiguous
+type: AMBIGUOUS
+description: >
+  A vague requirement. The requirements agent reports a high ambiguity score and asks questions, so the run pauses; the
+  human accepts the proposed assumptions and the plan is re-derived. A reviewer then rejects the first design as too
+  broad (feedback loop and re-plan). A token surge exceeds the budget, which safe-stops the run; the human raises the
+  budget and resumes.
+requirement: "Make the shortener safer against abuse."
+token-budget: 120000
+
+faults:
+  # The planning call reports a large token usage, pushing the run past its budget.
+  - stage: planning
+    type: TOKEN_SURGE
+    attempts: [1]
+    tokens: 150000
+
+human-actions:
+  - on: CLARIFICATION
+    decision: ANSWER_ACCEPTING_ASSUMPTIONS
+    comment: "The proposed assumptions are fine: URL hygiene only, keep the existing per-IP rate limit."
+  - on: APPROVAL
+    stage: design
+    decision: REJECT
+    comment: "Too broad. Do not touch the rate limiter or add dependencies; keep this to validating the target URL."
+  - on: APPROVAL
+    stage: design
+    decision: APPROVE
+    comment: "Narrow enough: only UrlValidator changes."
+  - on: APPROVAL
+    stage: "impl:T1"
+    decision: APPROVE
+    comment: "Security-relevant file reviewed: the new checks are additive and only reject."
+    times: 3
+  - on: STOPPED
+    decision: RAISE_BUDGET
+    token-budget: 2000000
+    comment: "Budget raised after the surge."
+  - on: APPROVAL
+    stage: release
+    decision: APPROVE
+    comment: "Reviewed."

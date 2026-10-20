@@ -1,0 +1,53 @@
+{
+    "summary":  "Enforce expiry on every resolve (null-safe, boundary inclusive); add createBatch",
+    "changes":  [
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "     * \u003cp\u003eKNOWN DEFECT (seeded on purpose for the brownfield scenario, see docs/SCENARIOS.md): expiry is only",
+                        "replacement":  "     * \u003cp\u003eExpiry is re-checked on every call, not only when the link is loaded into the cache:"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "     * evaluated on cache load, so a link that expires while cached keeps redirecting until the cache entry",
+                        "replacement":  "     * a link that expires while it is cached stops redirecting immediately and is evicted."
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "     * itself expires.",
+                        "replacement":  "     * (Before this, a cached link kept redirecting after it expired.)"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "        CachedLink link = redirectCache.get(code, this::loadActiveLink);",
+                        "replacement":  "        CachedLink link = redirectCache.get(code, this::loadActiveLink);\n        if (link.expiresAt() != null \u0026\u0026 !clock.instant().isBefore(link.expiresAt())) {\n            redirectCache.invalidate(code);\n            throw new Gone(code, \"expired\");\n        }"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "import java.util.List;",
+                        "replacement":  "import java.util.ArrayList;\nimport java.util.List;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "    static final int MAX_GENERATION_ATTEMPTS = 3;",
+                        "replacement":  "    static final int MAX_GENERATION_ATTEMPTS = 3;\n    public static final int MAX_BATCH_SIZE = 100;"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "    public record ResolvedLink(long id, String originalUrl) {",
+                        "replacement":  "    /** One entry of a batch create: either the created link or the reason it was rejected. */\n    public record BatchItemResult(int index, ShortUrl link, String error) {\n        static BatchItemResult created(int index, ShortUrl link) {\n            return new BatchItemResult(index, link, null);\n        }\n\n        static BatchItemResult rejected(int index, String error) {\n            return new BatchItemResult(index, null, error);\n        }\n    }\n\n    public record ResolvedLink(long id, String originalUrl) {"
+                    },
+                    {
+                        "path":  "src/main/java/com/agentic/shortener/service/ShortenerService.java",
+                        "op":  "REPLACE",
+                        "find":  "    public ShortUrl get(String code) {",
+                        "replacement":  "    /** Creates up to {@link #MAX_BATCH_SIZE} links. Each item succeeds or is rejected on its own, in input order. */\n    public List\u003cBatchItemResult\u003e createBatch(List\u003cCreateCommand\u003e commands) {\n        if (commands == null || commands.isEmpty()) {\n            throw new InvalidRequest(\"at least one url is required\");\n        }\n        if (commands.size() \u003e MAX_BATCH_SIZE) {\n            throw new InvalidRequest(\"at most \" + MAX_BATCH_SIZE + \" urls can be created in one request\");\n        }\n        List\u003cBatchItemResult\u003e results = new ArrayList\u003c\u003e(commands.size());\n        for (int i = 0; i \u003c commands.size(); i++) {\n            try {\n                results.add(BatchItemResult.created(i, create(commands.get(i))));\n            } catch (InvalidRequest | AliasTaken e) {\n                results.add(BatchItemResult.rejected(i, e.getMessage()));\n            }\n        }\n        return results;\n    }\n\n    public ShortUrl get(String code) {"
+                    }
+                ]
+}

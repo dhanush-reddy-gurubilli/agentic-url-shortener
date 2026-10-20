@@ -1,0 +1,10 @@
+{
+    "summary":  "Add the expires_at index as a new migration",
+    "changes":  [
+                    {
+                        "path":  "src/main/resources/db/migration/V3__urls_expiry_index.sql",
+                        "op":  "WRITE",
+                        "content":  "-- Supports finding links that have an expiry (expiry lookups, a future purge job).\n-- Partial: most links never expire, so they stay out of the index.\nCREATE INDEX idx_urls_expires_at ON urls (expires_at) WHERE expires_at IS NOT NULL;"
+                    }
+                ]
+}

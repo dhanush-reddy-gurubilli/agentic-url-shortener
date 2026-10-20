@@ -1,0 +1,7 @@
+{
+    "narrative":  "## What changed\nTarget-URL hygiene: creation now rejects URLs that embed credentials, use an IP address instead of a domain, or point at local-only hosts. The per-IP rate limit is unchanged.\n\n## How the requirement was shaped\nThe original requirement (make it safer against abuse) was too vague to design from. The run paused, asked three questions, and a person accepted the proposed assumptions. The first design was also rejected as too broad (it changed the rate limiter and added a dependency) and was redone narrowly.\n\n## How it was validated\nThe whole shortener suite ran against a throw-away schema, with new parameterised tests for each rejection class and for valid URLs that must keep working.",
+    "risks":  [
+                  "A false rejection would block a legitimate link; only clear-cut cases are rejected",
+                  "Abuse via request volume is not addressed: the rate limiter was deliberately left alone"
+              ]
+}

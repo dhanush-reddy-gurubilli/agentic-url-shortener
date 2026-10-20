@@ -1,0 +1,51 @@
+{
+    "summary":  "Add an in-process QR renderer (ZXing core) behind a new read-only endpoint that reuses the redirect lookup.",
+    "decisions":  [
+                      {
+                          "title":  "ZXing core only",
+                          "rationale":  "Core has no transitive dependencies. PNG is drawn with the JDK image API and SVG is emitted directly, so the larger javase module is not needed."
+                      },
+                      {
+                          "title":  "Reuse ShortenerService.resolve",
+                          "rationale":  "Gives the QR endpoint the same 404 / 410 behaviour as the redirect for free, including expiry and deletion."
+                      },
+                      {
+                          "title":  "Encode the short URL",
+                          "rationale":  "The code must survive a later change of the destination, so it points at the short link."
+                      }
+                  ],
+    "intendedFiles":  [
+                          {
+                              "path":  "pom.xml",
+                              "action":  "MODIFY",
+                              "purpose":  "Add the com.google.zxing:core dependency"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/service/QrCodeService.java",
+                              "action":  "CREATE",
+                              "purpose":  "Render PNG and SVG QR codes"
+                          },
+                          {
+                              "path":  "src/main/java/com/agentic/shortener/web/QrController.java",
+                              "action":  "CREATE",
+                              "purpose":  "GET /api/v1/urls/{code}/qr"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/service/QrCodeServiceTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "Unit tests, including a decode round trip"
+                          },
+                          {
+                              "path":  "src/test/java/com/agentic/shortener/web/QrControllerTest.java",
+                              "action":  "CREATE",
+                              "purpose":  "HTTP tests for formats, sizes and error statuses"
+                          }
+                      ],
+    "newDependencies":  [
+                            "com.google.zxing:core:3.5.4"
+                        ],
+    "risks":  [
+                  "Very large sizes cost memory: capped at 1024 px",
+                  "A new library enters the supply chain: allowlisted group, pinned version"
+              ]
+}

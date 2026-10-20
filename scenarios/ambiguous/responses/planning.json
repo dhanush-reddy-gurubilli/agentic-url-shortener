@@ -1,0 +1,18 @@
+{
+    "tasks":  [
+                  {
+                      "id":  "T1",
+                      "title":  "Add the abuse checks to UrlValidator",
+                      "files":  [
+                                    "src/main/java/com/agentic/shortener/service/UrlValidator.java"
+                                ],
+                      "dependsOn":  [
+
+                                    ],
+                      "acceptance":  [
+                                         "Credentials, IP literals and local-only hosts are rejected with 400",
+                                         "Ordinary domain URLs are still accepted"
+                                     ]
+                  }
+              ]
+}

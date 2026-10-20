@@ -1,0 +1,33 @@
+{
+    "title":  "Enforce link expiry on every redirect, and add bulk create",
+    "changeType":  "BROWNFIELD",
+    "goals":  [
+                  "A link must stop redirecting as soon as it expires",
+                  "Let a client create many short links in one request"
+              ],
+    "functionalRequirements":  [
+                                   "A link that expires while it is cached must return 410 Gone on the next redirect",
+                                   "POST /api/v1/urls/bulk accepts 1 to 100 URLs and creates each independently",
+                                   "The response says, per item, whether it was created (with its code) or rejected (with the reason)"
+                               ],
+    "nonFunctionalRequirements":  [
+                                      "No change to the behaviour of existing endpoints",
+                                      "The new endpoint must not be a way around the per-client create rate limit",
+                                      "Existing migrations stay untouched"
+                                  ],
+    "acceptanceCriteria":  [
+                               "A cached link returns 410 the moment it expires, including exactly at its expiry instant",
+                               "A link that has not expired keeps redirecting",
+                               "A bulk request with valid and invalid items creates the valid ones and reports the invalid ones",
+                               "An empty request and a request with more than 100 items are rejected with 400",
+                               "Bulk requests count against the same per-client create limit"
+                           ],
+    "ambiguities":  [
+
+                    ],
+    "assumptions":  [
+                        "A bulk request counts as one create for rate limiting",
+                        "Partial success is acceptable: items are independent"
+                    ],
+    "ambiguityScore":  0.2
+}

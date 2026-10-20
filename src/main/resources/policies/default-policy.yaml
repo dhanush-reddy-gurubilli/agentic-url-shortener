@@ -1,0 +1,34 @@
+# Guardrails enforced by the orchestrator. Rules themselves are code (PolicyRules); this file holds what to tune.
+# Every violation blocks. Nothing here is advisory.
+
+# Change control: agents may not edit these (the engine can't change its own code, policies, workflows or scenarios).
+protected-paths:
+  - src/main/java/com/agentic/orchestrator/
+  - src/test/java/com/agentic/orchestrator/
+  - src/main/resources/policies/
+  - src/main/resources/workflows/
+  - src/main/resources/application.yml
+  - scenarios/
+  - docs/PLAN.md
+  - .github/
+
+# Security: groups a change set may newly depend on.
+allowed-new-dependency-groups:
+  - com.google.zxing
+  - org.apache.commons
+  - com.google.guava
+
+max-files-per-change-set: 25
+max-changed-lines: 1500
+
+# Outputs above this many changed lines need a human.
+large-diff-lines: 500
+
+# Paths a human must review (regular expressions).
+security-sensitive-path-patterns:
+  - "(?i)security"
+  - "(?i)auth"
+  - "(?i)filter"
+  - "(?i)ratelimit"
+  - "(?i)validator"
+  - "(?i)iphasher"

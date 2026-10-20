@@ -1,0 +1,31 @@
+{
+    "title":  "QR code for a short URL",
+    "changeType":  "GREENFIELD",
+    "goals":  [
+                  "Let people share a scannable code for any short link"
+              ],
+    "functionalRequirements":  [
+                                   "GET /api/v1/urls/{code}/qr returns a QR code that encodes the short URL",
+                                   "format=png (default) or format=svg",
+                                   "size is the image edge in pixels: default 256, between 64 and 1024"
+                               ],
+    "nonFunctionalRequirements":  [
+                                      "The code is generated in-process, with no network calls",
+                                      "The same input always produces the same image",
+                                      "Unknown, deleted and expired codes behave like the redirect (404 / 410)"
+                                  ],
+    "acceptanceCriteria":  [
+                               "A PNG response decodes back to the short URL and has the requested size",
+                               "An SVG response is well-formed and scales to the requested size",
+                               "Sizes outside 64-1024 and unknown formats are rejected with 400",
+                               "An unknown code returns 404 and a deleted code returns 410"
+                           ],
+    "ambiguities":  [
+
+                    ],
+    "assumptions":  [
+                        "The QR code encodes the short URL, not the original URL",
+                        "Error correction level M is sufficient"
+                    ],
+    "ambiguityScore":  0.1
+}

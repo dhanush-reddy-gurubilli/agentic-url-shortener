@@ -1,0 +1,37 @@
+{
+    "title":  "Safer against abuse",
+    "changeType":  "BROWNFIELD",
+    "goals":  [
+                  "Reduce abuse of the shortener"
+              ],
+    "functionalRequirements":  [
+                                   "Protect the service against abusive use"
+                               ],
+    "nonFunctionalRequirements":  [
+
+                                  ],
+    "acceptanceCriteria":  [
+                               "Abuse is harder than before"
+                           ],
+    "ambiguities":  [
+                        {
+                            "id":  "A1",
+                            "question":  "Which abuse: link spam and phishing targets, resource exhaustion by high request rates, or both?",
+                            "proposedAssumption":  "Phishing and unsafe targets only; the existing per-IP create rate limit stays as it is."
+                        },
+                        {
+                            "id":  "A2",
+                            "question":  "Should abusive links be rejected at creation time, or detected and disabled afterwards?",
+                            "proposedAssumption":  "Rejected at creation time; no background scanning."
+                        },
+                        {
+                            "id":  "A3",
+                            "question":  "Is an external reputation or blocklist service allowed?",
+                            "proposedAssumption":  "No external services: only static checks on the URL itself."
+                        }
+                    ],
+    "assumptions":  [
+
+                    ],
+    "ambiguityScore":  0.85
+}
