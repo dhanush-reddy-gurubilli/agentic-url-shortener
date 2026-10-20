@@ -14,6 +14,10 @@ Read next: [Architecture](docs/ARCHITECTURE.md)
 
 **Prerequisites:** JDK 25 or newer (built and tested on 26), Maven 3.9+, PostgreSQL 16+ (tested on 18), git.
 
+**Java 21:** the project is set to build for Java 25, but the code only needs Java 21 features. On a JDK 21 add
+`-Djava.version=21` to every Maven command (for example `mvn -Djava.version=21 spring-boot:run` or `mvn -Djava.version=21 verify`).
+This compiles cleanly at Java 21 level, but the tests and the application have only been run on JDK 26. Java 17 and older are not supported.
+
 ```bash
 # 1. Create the databases (once). Needs a PostgreSQL superuser.
 psql -h localhost -U postgres -f scripts/db-init.sql
